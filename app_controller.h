@@ -21,12 +21,13 @@ class AppController
 	public mono::IApplication
 {
 public:
-	static float getTemperatureInCelcius ();
+	int readTemperatureInCelcius ();
 	AppController ();
 	void monoWakeFromReset ();
 	void monoWakeFromSleep ();
 	void monoWillGotoSleep ();
 	void changeUnit ();
+        int getLastTemperatureInCelcius ();
 
 private:
 	void blitChar(int index, uint8_t x, uint8_t y);
@@ -46,6 +47,7 @@ private:
 	mono::Timer timer;
 	bool useCelcius;
     InternetUpload uploader;
+    int lastTemp;
 };
 
 #endif // __temperature_appcontroller_h

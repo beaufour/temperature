@@ -3,6 +3,8 @@
 #include <wireless/redpine_module.h>
 #include <application_context_interface.h>
 
+#include "app_controller.h"
+
 using namespace mono;
 using namespace mono::io;
 using namespace mono::network;
@@ -11,10 +13,11 @@ const char *InternetUpload::ssidFilename = "/sd/ssid.txt";
 const char *InternetUpload::passFilename = "/sd/pass.txt";
 const char *InternetUpload::urlFileName = "/sd/url.txt";
 
-InternetUpload::InternetUpload() :
+InternetUpload::InternetUpload(AppController * ctrl_) :
     sdfs(SD_SPI_MOSI, SD_SPI_MISO, SD_SPI_CLK, SD_SPI_CS, "sd"),
     rpSpi(RP_SPI_MOSI, RP_SPI_MISO, RP_SPI_CLK),
-    spiComm(rpSpi, RP_SPI_CS, RP_nRESET, RP_INTERRUPT)
+    spiComm(rpSpi, RP_SPI_CS, RP_nRESET, RP_INTERRUPT),
+    ctrl(ctrl_)
 {
     fsExist = false;
     lastSendTime = 0;
@@ -76,8 +79,7 @@ void InternetUpload::beginDownload()
 {
     if (!redpine::Module::IsNetworkReady())
         return;
-    int mcelcius = IApplicationContext::Instance->Temperature->ReadMilliCelcius();
-    String s = String::Format("%s?celcius=%i",url(),mcelcius);
+    String s = String::Format("%s?celcius=%i",url(),ctrl->getLastTemperatureInCelcius());
     client = HttpClient(s);
     client.setCompletionCallback<InternetUpload>(this, &InternetUpload::httpCompletion);
     lastSendTime = us_ticker_read();

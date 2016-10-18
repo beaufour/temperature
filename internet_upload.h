@@ -1,5 +1,3 @@
-
-
 #ifndef internet_upload_h
 #define internet_upload_h
 
@@ -28,6 +26,8 @@ class InternetUpload {
     redpine::ModuleSPICommunication spiComm;
     network::HttpClient client;
 
+    AppController * ctrl;
+
 protected:
 
     void wifiConnected();
@@ -36,7 +36,7 @@ public:
 
     mbed::FunctionPointer wifiStarted;
 
-    InternetUpload();
+    InternetUpload(AppController *);
 
     void init();
 

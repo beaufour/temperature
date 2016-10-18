@@ -31,7 +31,9 @@ AppController::AppController ()
 	graphView(40,220-87),
 	bg(mono::display::BlackColor),
 	timer(1000),
-	useCelcius(false)
+	useCelcius(false),
+        uploader(this),
+        lastTemp(0)
 {
 	sleeper.setCallback(mono::IApplicationContext::EnterSleepMode);
     displayWifiLogo = false;
@@ -59,23 +61,23 @@ void AppController::monoWillGotoSleep ()
     CyPins_ClearPin(EXPANSION_PWR_ENABLE);
 }
 
-float AppController::getTemperatureInCelcius ()
+int AppController::readTemperatureInCelcius ()
 {
-#if 1
-	const float flatten = 0.5;
-	static float tempC = 25.0;
-	ITemperature * temperature = IApplicationContext::Instance->Temperature;
-	tempC = (tempC * flatten) + (temperature->ReadMilliCelcius() / 1000.0 * (1.0 - flatten));
-	return tempC;
-#else
+#if TEST_TEMP
 	static float tempC = 0.0;
 	static bool up = true;
 	if (up) tempC += 0.5;
 	else tempC -= 0.5;
 	if (tempC > 50.0) up = false;
 	if (tempC < 0.0) up = true;
-	return tempC;
+	lastTemp = tempC * 1000;
+#else
+	ITemperature * temperature = IApplicationContext::Instance->Temperature;
+	// Read twice, or it won't work
+	lastTemp = temperature->ReadMilliCelcius();
+	lastTemp = temperature->ReadMilliCelcius();
 #endif
+	return lastTemp;
 }
 
 void AppController::changeUnit ()
@@ -83,6 +85,11 @@ void AppController::changeUnit ()
 	sleeper.Start();
 	useCelcius = ! useCelcius;
 	update();
+}
+
+int AppController::getLastTemperatureInCelcius ()
+{
+    return lastTemp;
 }
 
 String formatTemperature (int whole, int decimals, char unit)
@@ -110,7 +117,7 @@ void AppController::update ()
     }
 
 	String s;
-	float tempC = getTemperatureInCelcius();
+	float tempC = getLastTemperatureInCelcius() / 1000.0;
 	if (useCelcius)
 	{
 		int wholeC = tempC;
@@ -133,7 +140,7 @@ void AppController::update ()
 
 void AppController::measureAndUpdate ()
 {
-	float tempC = getTemperatureInCelcius();
+	float tempC = readTemperatureInCelcius() / 1000.0;
 	graphView.setNextPoint(tempC);
 	graphView.show();
 	update();
