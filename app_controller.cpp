@@ -73,8 +73,6 @@ int AppController::readTemperatureInCelcius ()
 	lastTemp = tempC * 1000;
 #else
 	ITemperature * temperature = IApplicationContext::Instance->Temperature;
-	// Read twice, or it won't work
-	lastTemp = temperature->ReadMilliCelcius();
 	lastTemp = temperature->ReadMilliCelcius();
 #endif
 	return lastTemp;
