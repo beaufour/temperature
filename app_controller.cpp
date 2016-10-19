@@ -72,8 +72,13 @@ int AppController::readTemperatureInCelcius ()
 	if (tempC < 0.0) up = true;
 	lastTemp = tempC * 1000;
 #else
+	const float flatten = 0.5;
 	ITemperature * temperature = IApplicationContext::Instance->Temperature;
-	lastTemp = temperature->ReadMilliCelcius();
+        if (lastTemp) {
+            lastTemp = (lastTemp * flatten) + (temperature->ReadMilliCelcius() * (1.0 - flatten));
+        } else {
+            lastTemp = temperature->ReadMilliCelcius();
+        }
 #endif
 	return lastTemp;
 }
