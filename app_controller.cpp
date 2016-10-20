@@ -57,8 +57,6 @@ void AppController::monoWakeFromSleep ()
 
 void AppController::monoWillGotoSleep ()
 {
-    //remove power from exspansion connector
-    CyPins_ClearPin(EXPANSION_PWR_ENABLE);
 }
 
 int AppController::readTemperatureInCelcius ()
