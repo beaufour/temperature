@@ -52,11 +52,14 @@ void AppController::monoWakeFromReset ()
 
 void AppController::monoWakeFromSleep ()
 {
-	mono::IApplicationContext::SoftwareResetToApplication();
+    // TODO: This adds a race condition in InternetUpload where we can end up with multiple timers
+    // uploading.
+    uploader.connectWifi();
 }
 
 void AppController::monoWillGotoSleep ()
 {
+    displayWifiLogo = false;
 }
 
 int AppController::readTemperatureInCelcius ()
