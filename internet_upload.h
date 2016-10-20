@@ -45,8 +45,6 @@ public:
     void beginDownload();
 
     void httpCompletion(network::INetworkRequest::CompletionEvent *evnt);
-
-    void httpData(network::HttpClient::HttpResponseData const &data);
 };
 
 #endif /* internet_upload_h */

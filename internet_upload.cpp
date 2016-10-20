@@ -102,8 +102,3 @@ void InternetUpload::httpCompletion(network::INetworkRequest::CompletionEvent *e
 
     }
 }
-
-void InternetUpload::httpData(network::HttpClient::HttpResponseData const &data)
-{
-    printf("%s",data.bodyChunk());
-}
