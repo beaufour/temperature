@@ -83,7 +83,8 @@ int AppController::readTemperatureInCelcius ()
 
 void AppController::changeUnit ()
 {
-	sleeper.Start();
+    // TODO: this kills networking
+    // sleeper.Start();
 	useCelcius = ! useCelcius;
 	update();
 }
