@@ -45,6 +45,7 @@ AppController::AppController ()
 
 void AppController::monoWakeFromReset ()
 {
+    printf("AppController::monoWakeFromReset()\r\n");
 	bg.show();
 	timer.setCallback<AppController>(this,&AppController::measureAndUpdate);
 	timer.Start();
@@ -62,6 +63,7 @@ void AppController::monoWakeFromReset ()
 
 void AppController::monoWakeFromSleep ()
 {
+    printf("AppController::monoWakeFromSleep()\r\n");
     IDisplayController* ctrl = IApplicationContext::Instance->DisplayController;
     ctrl->setBrightness(255);
 
@@ -75,6 +77,7 @@ void AppController::monoWakeFromSleep ()
 void AppController::monoWillGotoSleep ()
 {
     displayWifiLogo = false;
+    printf("AppController::monoWillGotoSleep()\r\n");
 }
 
 int AppController::readTemperatureInCelcius ()
