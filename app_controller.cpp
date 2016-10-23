@@ -57,6 +57,10 @@ void AppController::monoWakeFromSleep ()
     uploader.connectWifi();
     IDisplayController* ctrl = IApplicationContext::Instance->DisplayController;
     ctrl->setBrightness(255);
+
+    // Reset temp to 0, or we'll only slowly flatten up/down from the last temp, which can be much
+    // lower or higher.
+    lastTemp = 0;
 }
 
 void AppController::monoWillGotoSleep ()
