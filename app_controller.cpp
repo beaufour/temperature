@@ -14,6 +14,9 @@ using mono::display::IDisplayController;
 using mono::IApplicationContext;
 using mono::String;
 
+#define MONO_TEMPERATURE_URL (uint8_t const *)(CONF_KEY_ROOT "/temperature/url.txt")
+
+
 Toucher::Toucher (AppController * ctrl_)
 :
 	ctrl(ctrl_)
@@ -33,8 +36,8 @@ AppController::AppController ()
 	bg(mono::display::BlackColor),
 	timer(1000),
 	useCelcius(false),
-        uploader(this),
-        lastTemp(0)
+        lastTemp(0),
+        wifi(NULL)
 {
 	sleeper.setCallback(mono::IApplicationContext::EnterSleepMode);
     displayWifiLogo = false;
@@ -45,23 +48,28 @@ void AppController::monoWakeFromReset ()
 	bg.show();
 	timer.setCallback<AppController>(this,&AppController::measureAndUpdate);
 	timer.Start();
+#ifdef WIFI_URL
+        #warning Using static Wifi URL configuration
+        url = String(WIFI_URL);
+#else
+        url = configuration.get(MONO_TEMPERATURE_URL);
+#endif
 
-    uploader.wifiStarted.attach<AppController>(this, &AppController::wifiDidStart);
-    Timer::callOnce<InternetUpload>(200, &uploader, &InternetUpload::init);
+        initWifi();
+
 	sleeper.Start();
 }
 
 void AppController::monoWakeFromSleep ()
 {
-    // TODO: This adds a race condition in InternetUpload where we can end up with multiple timers
-    // uploading.
-    uploader.connectWifi();
     IDisplayController* ctrl = IApplicationContext::Instance->DisplayController;
     ctrl->setBrightness(255);
 
     // Reset temp to 0, or we'll only slowly flatten up/down from the last temp, which can be much
     // lower or higher.
     lastTemp = 0;
+
+    initWifi();
 }
 
 void AppController::monoWillGotoSleep ()
@@ -161,6 +169,18 @@ void AppController::measureAndUpdate ()
 	graphView.setNextPoint(tempC);
 	graphView.show();
 	update();
+        uploadData();
+}
+
+void AppController::uploadData () {
+    if (wifi->status() != Wifi::Wifi_Ready) {
+        printf("Wifi not ready: %i\r\n", wifi->status());
+        return;
+    }
+
+    String full_url = String::Format("%s?celcius=%i", url(), getLastTemperatureInCelcius());
+    printf("Uploading data: %s\r\n", full_url());
+    wifi->get((uint8_t *) full_url(), this);
 }
 
 uint8_t translateCharToFontIndex (char ch)
@@ -185,6 +205,21 @@ void AppController::drawTemperature (String temperature, uint8_t x, uint8_t y)
 	{
 		blitChar(translateCharToFontIndex(temperature[i]),x+i*width,y);
 	}
+}
+
+void AppController::initWifi ()
+{
+    if (wifi != NULL) {
+        delete wifi;
+    }
+    wifi = new Wifi(configuration);
+    wifi->connect<AppController>(this,&AppController::networkReadyHandler);
+}
+
+void AppController::networkReadyHandler ()
+{
+    printf("AppController::networkReadyHandler()\r\n");
+    displayWifiLogo = true;
 }
 
 void AppController::blitChar (int index, uint8_t x, uint8_t y)
@@ -256,9 +291,4 @@ void AppController::blitColor(Point const &p, int w, int h, mono::display::Color
 	for (int b=0; b<len; b++) {
 		ctrl->write(color.scale(preScale));
 	}
-}
-
-void AppController::wifiDidStart()
-{
-    displayWifiLogo = true;
 }

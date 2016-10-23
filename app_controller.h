@@ -3,8 +3,12 @@
 #if !defined(__temperature_appcontroller_h)
 #define __temperature_appcontroller_h
 #include <mono.h>
+#include <mn_string.h>
+
 #include "graph_view.h"
-#include "internet_upload.h"
+
+#include "lib/sdcardconfiguration.hpp"
+#include "lib/wifi.hpp"
 
 class AppController;
 
@@ -30,14 +34,16 @@ public:
         int getLastTemperatureInCelcius ();
 
 private:
+        void initWifi ();
+        void networkReadyHandler ();
 	void blitChar(int index, uint8_t x, uint8_t y);
 	void blitImage(mono::geo::Point const &p, uint8_t *data, int w, int h, mono::display::Color color, uint8_t preScale = 0xFF);
 	void blitColor(mono::geo::Point const &p, int w, int h, mono::display::Color color, uint8_t preScale = 0xFF);
 	void drawTemperature (mono::String temperature, uint8_t x, uint8_t y);
 	void update ();
 	void measureAndUpdate ();
+        void uploadData ();
 	void showLogo ();
-    void wifiDidStart();
 
 	mono::Timer sleeper;
 	Toucher toucher;
@@ -46,8 +52,10 @@ private:
     bool displayWifiLogo;
 	mono::Timer timer;
 	bool useCelcius;
-    InternetUpload uploader;
     int lastTemp;
+    SdCardConfiguration configuration;
+    Wifi* wifi;
+    mono::String url;
 };
 
 #endif // __temperature_appcontroller_h
