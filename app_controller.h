@@ -26,7 +26,7 @@ public:
 	void monoWakeFromReset ();
 	void monoWakeFromSleep ();
 	void monoWillGotoSleep ();
-	void changeUnit ();
+	void handleTouchEvent ();
         int getLastTemperatureInCelcius ();
 
 private:

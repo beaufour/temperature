@@ -21,7 +21,7 @@ Toucher::Toucher (AppController * ctrl_)
 
 void Toucher::RespondTouchEnd(TouchEvent &)
 {
-	ctrl->changeUnit();
+	ctrl->handleTouchEvent();
 }
 
 AppController::AppController ()
@@ -55,6 +55,8 @@ void AppController::monoWakeFromSleep ()
     // TODO: This adds a race condition in InternetUpload where we can end up with multiple timers
     // uploading.
     uploader.connectWifi();
+    IDisplayController* ctrl = IApplicationContext::Instance->DisplayController;
+    ctrl->setBrightness(255);
 }
 
 void AppController::monoWillGotoSleep ()
@@ -84,8 +86,13 @@ int AppController::readTemperatureInCelcius ()
 	return lastTemp;
 }
 
-void AppController::changeUnit ()
+void AppController::handleTouchEvent ()
 {
+    static bool display_on = true;
+    IDisplayController* ctrl = IApplicationContext::Instance->DisplayController;
+    ctrl->setBrightness(display_on ? 0 : 255);
+    display_on = !display_on;
+
     // TODO: this kills networking
     // sleeper.Start();
 	useCelcius = ! useCelcius;
