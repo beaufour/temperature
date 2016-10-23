@@ -4,11 +4,14 @@
 #define __com_openmono_wifi_h
 #include <mbed.h>
 #include <mono.h>
+#include <network_request.h>
 #include <wireless/module_communication.h>
 #include <wireless/redpine_module.h>
+
 #include "lib/bytestring.hpp"
 #include "lib/ibytebuffer.hpp"
 #include "lib/iconfiguration.hpp"
+
 using mono::network::HttpClient;
 
 #define MONO_WIFI_SSID (uint8_t const *)(CONF_KEY_ROOT "/wifi/ssid.txt")
@@ -89,6 +92,7 @@ private:
     Status startConnection ();
     Status startRequest (uint8_t const * url);
     void networkReadyHandler ();
+    void errorCallback (mono::network::INetworkRequest::ErrorEvent* error);
     void httpHandleData (HttpClient::HttpResponseData const & data);
     void destroyClient ();
 

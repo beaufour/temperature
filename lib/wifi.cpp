@@ -10,6 +10,7 @@ Wifi::Wifi (IConfiguration const & configuration_)
     _status(Wifi_NotConnected),
     configuration(configuration_)
 {
+    printf("Wifi()\r\n");
 }
 
 Wifi::~Wifi ()
@@ -19,6 +20,7 @@ Wifi::~Wifi ()
 
 Wifi::Status Wifi::startConnection ()
 {
+    printf("Wifi:startConnection()\r\n)");
 #ifdef WIFI_SSID
 #warning Using static Wifi configuration
     ssid = ByteString(WIFI_SSID);
@@ -58,12 +60,29 @@ Wifi::Status Wifi::startRequest (uint8_t const * url)
     destroyClient();
     client = mono::network::HttpClient((char const *)url);
     client.setDataReadyCallback<Wifi>(this,&Wifi::httpHandleData);
+    client.setErrorCallback<Wifi>(this,&Wifi::errorCallback);
     _status = Wifi_Receiving;
     return _status;
 }
 
+void Wifi::errorCallback (mono::network::INetworkRequest::ErrorEvent* error)
+{
+    printf("Wifi::errorCallback(%i)\r\n", error->ErrorCode);
+    statusHandler.call(Wifi_BrokenReply);
+    // The assumption is that it is only the current connection that is dead, not the underlying
+    // network layer
+    _status = Wifi_Ready;
+}
+
 void Wifi::httpHandleData (HttpClient::HttpResponseData const & data)
 {
+    if (data.Context->HasFailed())
+    {
+        // The assumption is that errorCallback is always called and will take care of the
+        // statusHandler call.
+        return;
+    }
+
     if (_buffer != 0) {
         _buffer->add((uint8_t const *)data.bodyChunk(),data.bodyChunk.Length());
     }
@@ -73,7 +92,10 @@ void Wifi::httpHandleData (HttpClient::HttpResponseData const & data)
         statusHandler.call(_status);
         receivedHandler.call(_buffer);
     }
-    else statusHandler.call(_status);
+    else
+    {
+        statusHandler.call(_status);
+    }
 }
 
 Wifi::Status Wifi::status () const
