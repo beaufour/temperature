@@ -179,7 +179,6 @@ void AppController::uploadData () {
     }
 
     String full_url = String::Format("%s?celcius=%i", url(), getLastTemperatureInCelcius());
-    printf("Uploading data: %s\r\n", full_url());
     wifi->get((uint8_t *) full_url(), this);
 }
 
