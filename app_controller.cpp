@@ -1,9 +1,10 @@
 // This software is part of OpenMono, see http://developer.openmono.com
 // Released under the MIT license, see LICENSE.txt
 #include "app_controller.h"
-#include "mono_bitmap.h"
-#include "temperature_menlo_bitmap.h"
-#include "wifi_logo.h"
+
+#include "bitmaps/mono_bitmap.h"
+#include "bitmaps/temperature_menlo_bitmap.h"
+#include "bitmaps/wifi_logo.h"
 
 using mono::sensor::ITemperature;
 using mono::display::Color;
